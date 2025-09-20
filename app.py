@@ -14,7 +14,7 @@ def init_counter():
         try:
             with open(COUNTER_FILE, "r") as f:
                 content = f.read().strip()
-                int(content)  # Проверяем, что можно преобразовать в число
+                int(content)
         except (ValueError, OSError):
             with open(COUNTER_FILE, "w") as f:
                 f.write("0")
@@ -22,39 +22,35 @@ def init_counter():
 init_counter()
 
 
-# 🚫 Главная страница — не увеличивает счётчик!
 @app.route('/')
-def home():
-    return """
-    <h2>👋 Добро пожаловать!</h2>
-    <p>Этот сервис предназначен для отслеживания сканирований QR-кода.</p>
-    <p>Администраторы: <a href='/settings'>перейдите на страницу сброса</a>.</p>
-    <p>QR-код должен вести на: <strong><code>/qr</code></strong></p>
-    """
-
-
-# ✅ Этот маршрут — ТОЛЬКО для QR-кода. Увеличивает счётчик.
-@app.route('/qr')
 def track_and_redirect():
-    try:
-        with open(COUNTER_FILE, "r") as f:
-            count = int(f.read().strip())
-    except (ValueError, OSError):
-        count = 0
+    # Проверяем, откуда пришёл пользователь
+    referer = request.headers.get('Referer', '')
+    is_from_settings = '/settings' in referer
 
-    count += 1
+    # Увеличиваем счётчик ТОЛЬКО если переход НЕ с /settings
+    if not is_from_settings:
+        try:
+            with open(COUNTER_FILE, "r") as f:
+                count = int(f.read().strip())
+        except (ValueError, OSError):
+            count = 0
 
-    try:
-        with open(COUNTER_FILE, "w") as f:
-            f.write(str(count))
-    except OSError:
-        pass
+        count += 1
 
-    print(f"Сканирований QR: {count}")
+        try:
+            with open(COUNTER_FILE, "w") as f:
+                f.write(str(count))
+        except OSError:
+            pass
+
+        print(f"Сканирований: {count}")
+    else:
+        print("Переход с /settings — счётчик не увеличен")
+
     return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
 
-# 🔁 Страница сброса — не влияет на счётчик
 @app.route('/settings', methods=['GET', 'POST'])
 def settings_counter():
     if request.method == 'POST':
