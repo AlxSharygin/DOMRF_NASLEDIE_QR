@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 COUNTER_FILE = "counter.txt"
 
-# Инициализация файла, если его нет или он повреждён
+# Инициализация файла счётчика
 def init_counter():
     if not os.path.exists(COUNTER_FILE):
         with open(COUNTER_FILE, "w") as f:
@@ -14,7 +14,7 @@ def init_counter():
         try:
             with open(COUNTER_FILE, "r") as f:
                 content = f.read().strip()
-                int(content)
+                int(content)  # Проверка, что содержимое — число
         except (ValueError, OSError):
             with open(COUNTER_FILE, "w") as f:
                 f.write("0")
@@ -22,13 +22,12 @@ def init_counter():
 init_counter()
 
 
+# 🚀 Главная страница — увеличивает счётчик (если не с /settings) и сразу редиректит
 @app.route('/')
 def track_and_redirect():
-    # Проверяем, откуда пришёл пользователь
     referer = request.headers.get('Referer', '')
     is_from_settings = '/settings' in referer
 
-    # Увеличиваем счётчик ТОЛЬКО если переход НЕ с /settings
     if not is_from_settings:
         try:
             with open(COUNTER_FILE, "r") as f:
@@ -48,9 +47,11 @@ def track_and_redirect():
     else:
         print("Переход с /settings — счётчик не увеличен")
 
+    # 🔁 Сразу редиректим, НИКАКОГО HTML!
     return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
 
+# 🔁 Страница сброса — показывает счётчик и сбрасывает его по POST-запросу (кнопке)
 @app.route('/settings', methods=['GET', 'POST'])
 def settings_counter():
     if request.method == 'POST':
@@ -69,6 +70,7 @@ def settings_counter():
     except (ValueError, OSError):
         count = 0
 
+    # HTML-страница для /settings
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -93,3 +95,4 @@ def settings_counter():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
+``
