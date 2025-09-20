@@ -14,7 +14,7 @@ if not os.path.exists(COUNTER_FILE):
 def track_and_redirect():
     count = 0
 
-    # Читаем счётчик с обработкой ошибок
+    # Безопасное чтение счётчика
     try:
         with open(COUNTER_FILE, "r") as f:
             content = f.read().strip()
@@ -27,7 +27,7 @@ def track_and_redirect():
 
     count += 1
 
-    # Пишем новое значение
+    # Безопасная запись
     try:
         with open(COUNTER_FILE, "w") as f:
             f.write(str(count))
