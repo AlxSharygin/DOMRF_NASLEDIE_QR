@@ -1,5 +1,6 @@
-from flask import Flask, redirect
+from flask import Flask, redirect, request
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -10,8 +11,25 @@ if not os.path.exists(COUNTER_FILE):
     with open(COUNTER_FILE, "w") as f:
         f.write("0")
 
+# Обработчик favicon.ico — чтобы не увеличивал счётчик
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204  # No Content — ничего не возвращаем
+
 @app.route('/')
 def track_and_redirect():
+    # Логируем информацию о запросе
+    ip = request.remote_addr
+    user_agent = request.headers.get('User-Agent', 'Неизвестно')
+    method = request.method
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] Запрос от {ip} | Метод: {method} | UA: {user_agent}")
+
+    # Игнорируем не-GET запросы (например, HEAD от сканеров)
+    if method != "GET":
+        print("  → Игнорируем не-GET запрос.")
+        return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
+
     count = 0
 
     # Безопасное чтение счётчика
@@ -21,31 +39,4 @@ def track_and_redirect():
             if content.isdigit():
                 count = int(content)
             else:
-                print(f"⚠️ Некорректное содержимое файла: '{content}'. Сбрасываем на 0.")
-    except Exception as e:
-        print(f"⚠️ Ошибка при чтении файла: {e}. Сбрасываем на 0.")
-
-    count += 1
-
-    # Безопасная запись
-    try:
-        with open(COUNTER_FILE, "w") as f:
-            f.write(str(count))
-    except Exception as e:
-        print(f"⚠️ Ошибка при записи файла: {e}")
-
-    print(f"Сканирований: {count}")
-    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
-
-@app.route('/reset')
-def reset_counter():
-    try:
-        with open(COUNTER_FILE, "w") as f:
-            f.write("0")
-        return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/'>← Вернуться</a></p>"
-    except Exception as e:
-        return f"<h2>❌ Ошибка при сбросе: {e}</h2><p><a href='/'>← Вернуться</a></p>"
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    app.run(host='0.0.0.0', port=port)
+                print(f"⚠️ Некорректное содержимое файла: '{content}'.
