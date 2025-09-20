@@ -14,7 +14,7 @@ def init_counter():
         try:
             with open(COUNTER_FILE, "r") as f:
                 content = f.read().strip()
-                int(content)  # Проверка, что содержимое — число
+                int(content)
         except (ValueError, OSError):
             with open(COUNTER_FILE, "w") as f:
                 f.write("0")
@@ -22,36 +22,28 @@ def init_counter():
 init_counter()
 
 
-# 🚀 Главная страница — увеличивает счётчик (если не с /settings) и сразу редиректит
+# 🚀 Главная страница — увеличивает счётчик и сразу редиректит. ВСЕГДА.
 @app.route('/')
 def track_and_redirect():
-    referer = request.headers.get('Referer', '')
-    is_from_settings = '/settings' in referer
+    try:
+        with open(COUNTER_FILE, "r") as f:
+            count = int(f.read().strip())
+    except (ValueError, OSError):
+        count = 0
 
-    if not is_from_settings:
-        try:
-            with open(COUNTER_FILE, "r") as f:
-                count = int(f.read().strip())
-        except (ValueError, OSError):
-            count = 0
+    count += 1
 
-        count += 1
+    try:
+        with open(COUNTER_FILE, "w") as f:
+            f.write(str(count))
+    except OSError:
+        pass
 
-        try:
-            with open(COUNTER_FILE, "w") as f:
-                f.write(str(count))
-        except OSError:
-            pass
-
-        print(f"Сканирований: {count}")
-    else:
-        print("Переход с /settings — счётчик не увеличен")
-
-    # 🔁 Сразу редиректим, НИКАКОГО HTML!
+    print(f"Сканирований: {count}")
     return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
 
-# 🔁 Страница сброса — показывает счётчик и сбрасывает его по POST-запросу (кнопке)
+# ⚙️ Страница настроек — НИКОГДА не увеличивает счётчик
 @app.route('/settings', methods=['GET', 'POST'])
 def settings_counter():
     if request.method == 'POST':
@@ -70,7 +62,6 @@ def settings_counter():
     except (ValueError, OSError):
         count = 0
 
-    # HTML-страница для /settings
     html = f"""
     <!DOCTYPE html>
     <html>
