@@ -16,21 +16,31 @@ def init_counter():
                 content = f.read().strip()
                 int(content)  # Проверяем, что можно преобразовать в число
         except (ValueError, OSError):
-            # Если файл повреждён — пересоздаём
             with open(COUNTER_FILE, "w") as f:
                 f.write("0")
 
-# Вызываем инициализацию при старте
 init_counter()
 
 
+# 🚫 Главная страница — не увеличивает счётчик!
 @app.route('/')
+def home():
+    return """
+    <h2>👋 Добро пожаловать!</h2>
+    <p>Этот сервис предназначен для отслеживания сканирований QR-кода.</p>
+    <p>Администраторы: <a href='/settings'>перейдите на страницу сброса</a>.</p>
+    <p>QR-код должен вести на: <strong><code>/qr</code></strong></p>
+    """
+
+
+# ✅ Этот маршрут — ТОЛЬКО для QR-кода. Увеличивает счётчик.
+@app.route('/qr')
 def track_and_redirect():
     try:
         with open(COUNTER_FILE, "r") as f:
             count = int(f.read().strip())
     except (ValueError, OSError):
-        count = 0  # Если ошибка — начинаем с нуля
+        count = 0
 
     count += 1
 
@@ -38,12 +48,13 @@ def track_and_redirect():
         with open(COUNTER_FILE, "w") as f:
             f.write(str(count))
     except OSError:
-        pass  # Игнорируем ошибки записи (можно логировать при необходимости)
+        pass
 
-    print(f"Сканирований: {count}")
+    print(f"Сканирований QR: {count}")
     return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
 
+# 🔁 Страница сброса — не влияет на счётчик
 @app.route('/settings', methods=['GET', 'POST'])
 def settings_counter():
     if request.method == 'POST':
@@ -84,5 +95,5 @@ def settings_counter():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))  # ← Обратите внимание: теперь 8080, как в логе
+    port = int(os.environ.get('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
