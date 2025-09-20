@@ -1,0 +1,17 @@
+from flask import Flask, redirect
+
+app = Flask(__name__)
+
+# Счётчик
+clicks = 0
+
+@app.route('/')
+def track_and_redirect():
+    global clicks
+    clicks += 1
+    print(f"Сканирований: {clicks}")  # или сохраните в файл/БД
+    # Перенаправляем на целевой сайт
+    return redirect("https://example.com", code=302)  # ← ЗАМЕНИТЕ НА ВАШУ ССЫЛКУ
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
