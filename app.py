@@ -31,12 +31,9 @@ def track_and_redirect():
 @app.route('/reset')
 def reset_counter():
     with lock:
-        with open(COUNTER_FILE, "r") as f:
-            count = int(f.read().strip())  # Читаем текущее значение
         with open(COUNTER_FILE, "w") as f:
-            f.write("0")  # Сбрасываем
-    print(f"Сканирований ДО сброса: {count}")
+            f.write("0")
     return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/'>← Вернуться</a></p>"
-    
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
