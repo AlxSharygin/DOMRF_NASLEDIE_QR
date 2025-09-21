@@ -26,7 +26,7 @@ def track_and_redirect():
             f.write(str(count))
 
     print(f"Сканирований: {count}")
-    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn  --p1ai/", code=302)
+    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
 @app.route('/reset')
 def reset_counter():
