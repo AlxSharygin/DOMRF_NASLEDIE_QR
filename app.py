@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request
+from flask import Flask, redirect
 import os
 import threading
 
@@ -16,10 +16,6 @@ def health_check():
 
 @app.route('/')
 def track_and_redirect():
-    # Защита на случай неправильной маршрутизации (маловероятно, но для уверенности)
-    if request.path == '/reset':
-        return reset_counter()
-
     with lock:
         with open(COUNTER_FILE, "r") as f:
             count = int(f.read().strip())
