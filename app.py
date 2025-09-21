@@ -33,6 +33,7 @@ def reset_counter():
     with lock:
         with open(COUNTER_FILE, "w") as f:
             f.write("0")
+    print(f"Сканирований: {count}")
     return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/'>← Вернуться</a></p>"
 
 if __name__ == '__main__':
