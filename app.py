@@ -28,13 +28,20 @@ def track_and_redirect():
     print(f"Сканирований: {count}")
     return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
-@app.route('/reset')
-def reset_counter():
+@app.route('/')
+def track_and_redirect():
+    print("Запрос на / — увеличиваем счётчик")
     with lock:
+        with open(COUNTER_FILE, "r") as f:
+            count = int(f.read().strip())
+
+        count += 1
+
         with open(COUNTER_FILE, "w") as f:
-            f.write("0")
-    print(f"Счетчик сброшен")
-    return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/'>← Вернуться</a></p>"
+            f.write(str(count))
+
+    print(f"Сканирований: {count}")
+    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
