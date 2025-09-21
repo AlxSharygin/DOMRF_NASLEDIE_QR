@@ -14,7 +14,7 @@ if not os.path.exists(COUNTER_FILE):
 def health_check():
     return "OK", 200
 
-@app.route('/')
+@app.route('/run')
 def track_and_redirect():
     with lock:
         with open(COUNTER_FILE, "r") as f:
