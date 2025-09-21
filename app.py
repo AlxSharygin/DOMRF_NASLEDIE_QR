@@ -82,7 +82,9 @@ def reset_counter():
     with lock:
         with open(COUNTER_FILE, "w") as f:
             f.write("0")
-        # Также очищаем recent_visitors
-        recent_visitors.clear()
+        recent_visitors.clear()  # если используешь recent_visitors из предыдущего решения
     print("Счетчик сброшен")
-    return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/run'>← Вернуться</a></p>"
+
+    response = make_response("<h2>✅ Счётчик сброшен на 0 и кука удалена!</h2><p><a href='/run'>← Вернуться</a></p>")
+    response.set_cookie('visited', '', expires=0)  # ← вот эта строка удаляет куку
+    return response
