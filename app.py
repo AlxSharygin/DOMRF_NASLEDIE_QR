@@ -10,6 +10,10 @@ if not os.path.exists(COUNTER_FILE):
     with open(COUNTER_FILE, "w") as f:
         f.write("0")
 
+@app.route('/health')
+def health_check():
+    return "OK", 200
+
 @app.route('/')
 def track_and_redirect():
     with lock:
@@ -30,3 +34,6 @@ def reset_counter():
         with open(COUNTER_FILE, "w") as f:
             f.write("0")
     return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/'>← Вернуться</a></p>"
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080, debug=True)
