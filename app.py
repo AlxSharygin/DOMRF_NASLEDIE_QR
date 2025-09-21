@@ -8,12 +8,11 @@ app = Flask(__name__)
 COUNTER_FILE = os.path.join(os.path.dirname(__file__), "counter.txt")
 lock = threading.Lock()
 
-# Временное хранилище для недавних посещений (защита от дублей в пределах N секунд)
-recent_visitors = {}  # {visitor_key: timestamp}
-RECENT_TIMEOUT = 5  # секунд — если тот же пользователь зашёл раньше, чем 5 сек назад — игнорируем
+# Временное хранилище для защиты от дублей
+recent_visitors = {}
+RECENT_TIMEOUT = 5  # секунд
 
 def get_visitor_key():
-    """Генерируем уникальный ключ для посетителя на основе IP и User-Agent"""
     ip = request.remote_addr or "unknown"
     ua = request.headers.get('User-Agent', '') or "unknown"
     key_str = f"{ip}:{ua}"
@@ -29,9 +28,12 @@ def track_and_redirect():
     now = time.time()
 
     with lock:
+        # Очищаем устаревшие записи
         to_delete = [key for key, ts in recent_visitors.items() if now - ts > RECENT_TIMEOUT]
         for key in to_delete:
             recent_visitors.pop(key, None)
+
+        # Защита от параллельных дублей
         if visitor_key in recent_visitors:
             print(f"Дубль от {visitor_key} — игнорируем")
             response = make_response(redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302))
@@ -39,10 +41,12 @@ def track_and_redirect():
                 response.set_cookie('visited', 'true', max_age=3600, path='/')
             return response
 
+    # Если кука уже есть — не увеличиваем
     if request.cookies.get('visited') == 'true':
         print("Уже посещали (кука) — не увеличиваем счётчик")
         return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
 
+    # Увеличиваем счётчик
     count = 0
     with lock:
         if os.path.exists(COUNTER_FILE):
@@ -51,26 +55,46 @@ def track_and_redirect():
                     count = int(f.read().strip())
             except Exception:
                 count = 0
+
         count += 1
+
         try:
             with open(COUNTER_FILE, "w") as f:
                 f.write(str(count))
         except Exception as e:
-            print(f"Ошибка записи: {e}")
+            print(f"Ошибка записи счётчика: {e}")
 
     print(f"Сканирований: {count}")
+
+    # Редирект + установка куки на весь сайт
     response = make_response(redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302))
-    response.set_cookie('visited', 'true', max_age=3600, path='/')  # ← ИСПРАВЛЕНО
+    response.set_cookie('visited', 'true', max_age=3600, path='/')
     return response
-    
+
 @app.route('/reset')
 def reset_counter():
     with lock:
         with open(COUNTER_FILE, "w") as f:
             f.write("0")
         recent_visitors.clear()
-    print("Счетчик сброшен")
+    print("✅ Счётчик сброшен")
 
-    response = make_response("<h2>✅ Счётчик и кука сброшены!</h2><p><a href='/run'>← Попробуй снова</a></p>")
-    response.set_cookie('visited', '', expires=0, path='/')  # ← ИСПРАВЛЕНО
+    return """
+    <h2>✅ Счётчик успешно сброшен на 0!</h2>
+    <p>Чтобы заново увеличить счётчик при переходе — <a href="/clear-cookie">удалите куку</a>.</p>
+    <p><a href="/run">← Вернуться к ссылке</a></p>
+    """
+
+@app.route('/clear-cookie')
+def clear_cookie():
+    print("🍪 Удаляем куку 'visited'...")
+    response = make_response("""
+    <h2>🍪 Кука 'visited' удалена!</h2>
+    <p>Теперь при переходе по <a href="/run">/run</a> счётчик снова увеличится.</p>
+    <p><a href="/run">← Перейти по ссылке</a></p>
+    """)
+    # Удаляем куку для всего сайта
+    response.set_cookie('visited', '', expires=0, path='/')
+    recent_visitors.clear()
+    print("✅recent_visitors очищены")
     return response
