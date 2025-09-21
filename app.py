@@ -1,12 +1,10 @@
+from flask import Flask, redirect, request, make_response
 import os
 import threading
-from flask import Flask, redirect
 
 app = Flask(__name__)
-COUNTER_FILE = os.path.join(os.path.dirname(__file__), "counter.txt")  # ← Абсолютный путь
+COUNTER_FILE = os.path.join(os.path.dirname(__file__), "counter.txt")
 lock = threading.Lock()
-
-# УДАЛИ БЛОК ПРОВЕРКИ ПРИ ЗАПУСКЕ — он больше не нужен
 
 @app.route('/health')
 def health_check():
@@ -14,8 +12,13 @@ def health_check():
 
 @app.route('/run')
 def track_and_redirect():
+    response = make_response(redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302))
+
+    if request.cookies.get('visited') == 'true':
+        print("Уже посещали — не увеличиваем счётчик")
+        return response
+
     with lock:
-        # Читаем текущее значение или начинаем с 0
         if os.path.exists(COUNTER_FILE):
             with open(COUNTER_FILE, "r") as f:
                 count = int(f.read().strip())
@@ -28,7 +31,8 @@ def track_and_redirect():
             f.write(str(count))
 
     print(f"Сканирований: {count}")
-    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
+    response.set_cookie('visited', 'true', max_age=3600)  # 1 час
+    return response
 
 @app.route('/reset')
 def reset_counter():
