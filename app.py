@@ -37,6 +37,3 @@ def reset_counter():
             f.write("0")
     print("Счетчик сброшен")
     return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/run'>← Вернуться</a></p>"
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=False)  # ← Отключи debug для сохранения состояния
