@@ -58,8 +58,3 @@ def reset():
     return """
     <h2>Счётчик сброшен!</h2>
     <p><a href="/">Вернуться на главную</a></p>
-    """
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
