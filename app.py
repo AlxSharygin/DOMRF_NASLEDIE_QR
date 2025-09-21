@@ -16,32 +16,24 @@ def health_check():
 
 @app.route('/')
 def track_and_redirect():
-    user_agent = request.headers.get('User-Agent', 'unknown')
-    path = request.path
-    method = request.method
-
-    print(f"➡️ Запрос: {method} {path} от: {user_agent}")
-
     with lock:
         with open(COUNTER_FILE, "r") as f:
             count = int(f.read().strip())
+
         count += 1
+
         with open(COUNTER_FILE, "w") as f:
             f.write(str(count))
 
     print(f"Сканирований: {count}")
-    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn--p1ai/", code=302)
+    return redirect("https://xn--80aicbopm7a.xn--d1aqf.xn  --p1ai/", code=302)
 
 @app.route('/reset')
 def reset_counter():
     with lock:
-        # Сначала читаем текущее значение
-        with open(COUNTER_FILE, "r") as f:
-            count = int(f.read().strip())
-        # Потом сбрасываем
         with open(COUNTER_FILE, "w") as f:
             f.write("0")
-    print(f"Сканирований ДО сброса: {count}")  # ✅ Теперь count определён
+    print(f"Сканирований: {count}")
     return "<h2>✅ Счётчик успешно сброшен на 0!</h2><p><a href='/'>← Вернуться</a></p>"
 
 if __name__ == '__main__':
