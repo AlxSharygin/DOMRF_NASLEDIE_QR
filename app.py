@@ -84,6 +84,22 @@ def reset_counter():
     <p>Чтобы заново увеличить счётчик при переходе — <a href="/clear-cookie">удалите куку</a>.</p>
     <p><a href="/run">← Вернуться к ссылке</a></p>
     """
+@app.route('/statistics')
+def statistics():
+    """Увеличивает счётчик при переходе и показывает результат"""
+    count = read_counter()
+
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head><title>Переход зафиксирован</title><meta charset="utf-8"></head>
+    <body style="text-align:center; padding:50px; font-family:Arial;">
+        <h2>✅ Количество переходов на портал Наследие.дом.рф через QR-код Развития регионального бизнеса</h2>
+        <p><strong>Всего переходов: {count}</strong></p>
+        <p><a href="/">← Вернуться на главную</a></p>
+    </body>
+    </html>
+    """
 
 @app.route('/clear-cookie')
 def clear_cookie():
@@ -98,3 +114,4 @@ def clear_cookie():
     recent_visitors.clear()
     print("✅recent_visitors очищены")
     return response
+
