@@ -100,8 +100,8 @@ def statistics():
     <html>
     <head><title>Статистика переходов</title><meta charset="utf-8"></head>
     <body style="text-align:center; padding:50px; font-family:Arial;">
-        <h2>✅ Количество переходов на портал Наследие.дом.рф через QR-код Развития регионального бизнеса</h2>
-        <p><strong>Всего переходов: {count}</strong></p>
+        <h2>{count}</h2>
+        <p><strong>Количество переходов на портал Наследие.дом.рф через QR-код Развития регионального бизнеса</strong></p>
         <p><a href="/">← Вернуться на главную</a></p>
     </body>
     </html>
