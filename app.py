@@ -86,10 +86,19 @@ def reset_counter():
     """
 @app.route('/statistics')
 def statistics():
+    # Считываем текущее значение счётчика
+    count = 0
+    if os.path.exists(COUNTER_FILE):
+        try:
+            with open(COUNTER_FILE, "r") as f:
+                count = int(f.read().strip())
+        except Exception:
+            count = 0  # если файл пустой, битый или недоступен — ставим 0
+
     return f"""
     <!DOCTYPE html>
     <html>
-    <head><title>Переход зафиксирован</title><meta charset="utf-8"></head>
+    <head><title>Статистика переходов</title><meta charset="utf-8"></head>
     <body style="text-align:center; padding:50px; font-family:Arial;">
         <h2>✅ Количество переходов на портал Наследие.дом.рф через QR-код Развития регионального бизнеса</h2>
         <p><strong>Всего переходов: {count}</strong></p>
