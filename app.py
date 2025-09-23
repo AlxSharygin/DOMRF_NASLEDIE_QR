@@ -102,7 +102,7 @@ def statistics():
     <body style="text-align:center; padding:50px; font-family:Arial;">
         <h2>{count}</h2>
         <p><strong>Количество переходов на портал Наследие.дом.рф через QR-код Развития регионального бизнеса</strong></p>
-        <p><a href="/">← Вернуться на главную</a></p>
+        <p><a href="/run">← Вернуться на главную</a></p>
     </body>
     </html>
     """
