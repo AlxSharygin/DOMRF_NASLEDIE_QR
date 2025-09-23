@@ -86,9 +86,6 @@ def reset_counter():
     """
 @app.route('/statistics')
 def statistics():
-    """Увеличивает счётчик при переходе и показывает результат"""
-    count = read_counter()
-
     return f"""
     <!DOCTYPE html>
     <html>
